@@ -36,11 +36,6 @@
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-cache</artifactId>
 		</dependency>
 
@@ -81,12 +76,6 @@
 		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
-		</dependency>
-
-		<!-- ===== REDIS ===== -->
-		<dependency>
-			<groupId>io.lettuce</groupId>
-			<artifactId>lettuce-core</artifactId>
 		</dependency>
 
 		<!-- ===== UTILS ===== -->
