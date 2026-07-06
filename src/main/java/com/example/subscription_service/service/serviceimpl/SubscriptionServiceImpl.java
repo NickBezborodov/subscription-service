@@ -24,10 +24,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public ResponseEntity<SubscriptionDto> getSubscription(String login) {
+        log.info("🔍 Поиск подписки для логина: '{}'", login);
         return subscriptionRepository.findById(login)
                 .map(mapper::toDto)
                 .map(ResponseEntity::ok)
-                .orElseThrow(() -> new SubscriptionNotFoundException("Подписка не найдена: " + login));    }
+                .orElseThrow(() -> new SubscriptionNotFoundException("Подписка не найдена: " + login));
+    }
+
+    @Override
+    public SubscriptionDto createSubscription(String login, String type) {
+        SubscriptionType subscriptionType = SubscriptionType.valueOf(type.toUpperCase());
+        Subscription subscription = new Subscription();
+        subscription.setLogin(login);
+        subscription.setType(subscriptionType);
+        subscription.setExpirationDate(LocalDate.now().plusMonths(1));
+
+        Subscription saved = subscriptionRepository.save(subscription);
+        return mapper.toDto(saved);
+    }
 
     @Override
     public ResponseEntity<SubscriptionDto> updateSubscription(String login, SubscriptionType newType) {

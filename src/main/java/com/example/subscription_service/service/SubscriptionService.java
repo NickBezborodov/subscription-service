@@ -9,4 +9,5 @@ public interface SubscriptionService {
 
     ResponseEntity<SubscriptionDto> updateSubscription(String login, SubscriptionType newType);
 
+    SubscriptionDto createSubscription(String login, String type);
 }

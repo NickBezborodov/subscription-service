@@ -5,6 +5,10 @@ spring:
   application:
     name: subscription-service
 
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
   # ===== DATASOURCE =====
   datasource:
     url: jdbc:postgresql://localhost:5432/subscription_db
@@ -15,26 +19,20 @@ spring:
   # ===== JPA =====
   jpa:
     hibernate:
-      ddl-auto: validate
-    show-sql: false
+      ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-
-  # ===== LIQUIBASE =====
-  liquibase:
-    enabled: true
-    change-log: classpath:db/changelog/master.yaml
+        default_schema: public
 
   # ===== KAFKA =====
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer  # ← ИЗМЕНИЛ
     consumer:
       group-id: subscription-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -66,3 +64,13 @@ app:
   subscription:
     free-limit-mb: 100
     cache-ttl-seconds: 3600
+
+  kafka:
+    topics:
+      subscription-changed: subscription-changed
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

@@ -1,7 +1,6 @@
 package com.example.subscription_service.controller;
 
 import com.example.subscription_service.dto.SubscriptionDto;
-import com.example.subscription_service.enums.SubscriptionType;
 import com.example.subscription_service.service.SubscriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +18,11 @@ public class SubscriptionController {
         return subscriptionService.getSubscription(login);
     }
 
-    @PutMapping("/{login}")
-    public ResponseEntity<SubscriptionDto> updateSubscription(
+    @PostMapping("/{login}")
+    public ResponseEntity<SubscriptionDto> createSubscription(
             @PathVariable String login,
-            @RequestParam SubscriptionType type) {
-        return subscriptionService.updateSubscription(login, type);
+            @RequestParam String type) {
+        SubscriptionDto created = subscriptionService.createSubscription(login, type);
+        return ResponseEntity.ok(created);
     }
 }
