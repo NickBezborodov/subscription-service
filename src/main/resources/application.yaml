@@ -1,3 +1,76 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: subscription-service
+
+  cloud:
+    compatibility-verifier:
+      enabled: false
+
+  # ===== DATASOURCE =====
+  datasource:
+    url: jdbc:postgresql://localhost:5432/subscription_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  # ===== JPA =====
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+
+  # ===== KAFKA =====
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer  # ← ИЗМЕНИЛ
+    consumer:
+      group-id: subscription-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+
+# ===== LOGGING =====
+logging:
+  level:
+    com.example.subscription: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.kafka: WARN
+
+# ===== MANAGEMENT =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,cache
+  endpoint:
+    health:
+      show-details: always
+
+# ===== APP CONFIG =====
+app:
+  subscription:
+    free-limit-mb: 100
+    cache-ttl-seconds: 3600
+
+  kafka:
+    topics:
+      subscription-changed: subscription-changed
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false

@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-subscriptions-table
+      author: user
+      changes:
+        - createTable:
+            tableName: subscriptions
+            columns:
+              - column:
+                  name: login
+                  type: VARCHAR(255)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false

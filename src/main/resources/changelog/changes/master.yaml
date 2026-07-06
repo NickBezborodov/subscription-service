@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: classpath:changelog/changes/001-create-subscriptions-table.yaml
