@@ -1,68 +1,33 @@
 package com.example.subscription_service.job;
 
-import com.example.subscription_service.dto.SubscriptionChangeEvent;
-import com.example.subscription_service.model.Subscription;
-import com.example.subscription_service.enums.SubscriptionType;
-import com.example.subscription_service.kafka.producer.SubscriptionEventProducer;
-import com.example.subscription_service.repository.SubscriptionRepository;
+import com.example.subscription_service.service.SubscriptionExpirationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class SubscriptionScheduler {
 
-    private final SubscriptionRepository subscriptionRepository;
-    private final SubscriptionEventProducer eventProducer;
+    private final SubscriptionExpirationService expirationService;  // ✅ только сервис
 
-    @Scheduled(cron = "0 0 0 * * ?")
-    @Transactional
+    @Scheduled(cron = "${app.scheduler.subscription-cron}")
+    @SchedulerLock(
+            name = "checkExpiredSubscriptions",
+            lockAtMostFor = "5m",
+            lockAtLeastFor = "1m"
+    )
     public void checkAndExpireSubscriptions() {
-        log.info("⏰ Запуск проверки истекших подписок");
+        log.info("⏰ Запуск Scheduler'а для проверки истекших подписок");
 
-        LocalDate now = LocalDate.now();
-        List<Subscription> expiredSubscriptions = subscriptionRepository
-                .findAllByTypeAndExpirationDateBefore(SubscriptionType.PAID, now);
-
-        if (expiredSubscriptions.isEmpty()) {
-            log.info("✅ Истекших платных подписок не найдено");
-            return;
+        try {
+            int processed = expirationService.expirePaidSubscriptions();
+            log.info("✅ Scheduler завершил работу. Обработано: {}", processed);
+        } catch (Exception e) {
+            log.error("❌ Ошибка в Scheduler'е: {}", e.getMessage(), e);
         }
-
-        log.info("📊 Найдено {} истекших подписок", expiredSubscriptions.size());
-
-        for (Subscription subscription : expiredSubscriptions) {
-            try {
-                String login = subscription.getLogin();
-                String oldType = subscription.getType().name();
-
-                subscription.setType(SubscriptionType.FREE);
-                subscriptionRepository.save(subscription);
-
-                log.info("🔄 Подписка изменена: {} ({} → FREE)", login, oldType);
-
-                SubscriptionChangeEvent event = new SubscriptionChangeEvent(
-                        login,
-                        oldType,
-                        SubscriptionType.FREE.name(),
-                        LocalDateTime.now()
-                );
-                eventProducer.sendSubscriptionChangeEvent(event);
-
-            } catch (Exception e) {
-                log.error("❌ Ошибка при обработке подписки {}: {}",
-                        subscription.getLogin(), e.getMessage());
-            }
-        }
-
-        log.info("✅ Проверка истекших подписок завершена");
     }
 }
