@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SubscriptionScheduler {
 
-    private final SubscriptionExpirationService expirationService;  // ✅ только сервис
+    private final SubscriptionExpirationService expirationService;
 
     @Scheduled(cron = "${app.scheduler.subscription-cron}")
     @SchedulerLock(
